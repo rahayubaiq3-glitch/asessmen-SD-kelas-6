@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Aplikasi Kuis & Assessment Ulangan Harian Kelas 6 SD</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX for Math Equations -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+    
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+        .katex-display {
+            margin: 0.5em 0 !important;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+        /* Custom scrollbar for clean mobile experience */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between antialiased">
+
+    <header class="bg-indigo-600 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center font-bold text-lg">
+                    <i class="fa-solid fa-graduation-cap text-yellow-300"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold leading-tight">SD Pintar Assessment</h1>
+                    <p class="text-xs text-indigo-200">Ulangan Harian Matematika VI</p>
+                </div>
+            </div>
+            <button id="btnTeacherAccess" onclick="openTeacherModal()" class="text-xs bg-indigo-700 hover:bg-indigo-800 text-indigo-100 px-3 py-1.5 rounded-lg border border-indigo-400/30 transition flex items-center gap-1.5">
+                <i class="fa-solid fa-user-gear"></i>
+                <span>Guru</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-md w-full mx-auto p-4 flex-grow flex flex-col">
+
+        <section id="viewRegistration" class="space-y-5 my-auto py-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
+                <div class="absolute -top-10 -right-10 w-28 h-28 bg-indigo-50 rounded-full blur-xl pointer-events-none"></div>
+                
+                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+                    <i class="fa-solid fa-clipboard-user"></i>
+                </div>
+                
+                <h2 class="text-xl font-bold text-slate-800">Form Asesmen Siswa</h2>
+                <p class="text-xs text-slate-500 mt-1">Lengkapi data diri Anda secara jujur sebelum memulai ulangan harian ini.</p>
+
+                <form id="formStudent" onsubmit="handleStartQuiz(event)" class="mt-6 space-y-4 text-left">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Mata Pelajaran</label>
+                        <div class="relative">
+                            <input type="text" id="subjectName" value="Matematika (Pecahan & Desimal)" readonly
+                                class="w-full bg-slate-100 border border-slate-300 text-slate-700 text-sm rounded-xl p-3 font-medium cursor-not-allowed pl-10">
+                            <i class="fa-solid fa-book text-slate-400 absolute left-3.5 top-3.5 text-sm"></i>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Nama Lengkap Siswa <span class="text-rose-500">*</span></label>
+                        <div class="relative">
+                            <input type="text" id="studentName" required placeholder="Contoh: Ahmad Rizky"
+                                class="w-full bg-white border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-800 text-sm rounded-xl p-3 font-medium transition outline-none pl-10">
+                            <i class="fa-solid fa-user text-slate-400 absolute left-3.5 top-3.5 text-sm"></i>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">Kelas <span class="text-rose-500">*</span></label>
+                            <select id="studentClass" required class="w-full bg-white border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-800 text-sm rounded-xl p-3 font-medium transition outline-none">
+                                <option value="6-A">Kelas 6-A</option>
+                                <option value="6-B">Kelas 6-B</option>
+                                <option value="6-C">Kelas 6-C</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider mb-1.5">No. Absen <span class="text-rose-500">*</span></label>
+                            <input type="number" id="studentAbsence" required min="1" max="50" placeholder="1-50"
+                                class="w-full bg-white border border-slate-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-slate-800 text-sm rounded-xl p-3 font-medium transition outline-none">
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2 text-amber-800 text-xs">
+                        <i class="fa-solid fa-triangle-exclamation text-amber-500 mt-0.5"></i>
+                        <span><strong>Perhatian:</strong> Kuis ini hanya dapat dikerjakan <strong>1 KALI SAJA</strong>. Pastikan koneksi internet stabil sebelum mulai.</span>
+                    </div>
+
+                    <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98] text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-indigo-200 transition flex items-center justify-center space-x-2">
+                        <span>Mulai Kerjakan Soal</span>
+                        <i class="fa-solid fa-arrow-right text-sm"></i>
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <section id="viewQuiz" class="hidden flex-col flex-grow space-y-4">
+            
+            <!-- Top Status Bar -->
+            <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between text-xs font-medium">
+                <div class="flex items-center space-x-2 overflow-hidden pr-2">
+                    <div class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold flex-shrink-0">
+                        <span id="displayClassBadge">6A</span>
+                    </div>
+                    <div class="truncate">
+                        <p id="displayName" class="font-bold text-slate-800 truncate">Nama Siswa</p>
+                        <p class="text-slate-400 text-[10px]">No: <span id="displayAbsence">0</span></p>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button onclick="openQuestionGrid()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 font-bold transition">
+                        <i class="fa-solid fa-grip text-indigo-600"></i>
+                        <span id="displayAnsweredCount">0/40</span>
+                    </button>
+                    <div class="bg-amber-100 text-amber-800 px-2.5 py-1.5 rounded-lg flex items-center gap-1 font-bold">
+                        <i class="fa-regular fa-clock text-amber-600"></i>
+                        <span id="timerText">60:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+                <div id="quizProgressBar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 2.5%;"></div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex-grow flex flex-col justify-between">
+                <div>
+                    <!-- Question Header -->
+                    <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-100">
+                        <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">
+                            Soal No. <span id="currentQuestionNum">1</span> / 40
+                        </span>
+                        <button onclick="toggleBookmark()" id="btnBookmark" class="text-slate-400 hover:text-amber-500 text-sm transition flex items-center gap-1">
+                            <i class="fa-regular fa-bookmark"></i>
+                            <span class="text-xs">Ragu</span>
+                        </button>
+                    </div>
+
+                    <!-- Question Content -->
+                    <div id="questionText" class="text-slate-800 text-base leading-relaxed font-medium mb-5">
+                        <!-- Math / Text Content inserted here dynamically -->
+                    </div>
+
+                    <!-- Options List -->
+                    <div id="optionsContainer" class="space-y-2.5">
+                        <!-- Options generated here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Navigation Controls -->
+                <div class="pt-6 mt-4 border-t border-slate-100 flex items-center justify-between gap-2">
+                    <button id="btnPrev" onclick="navigateQuestion(-1)" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-600 font-bold text-xs hover:bg-slate-50 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-chevron-left"></i>
+                        <span>Sebelumnya</span>
+                    </button>
+
+                    <button id="btnNext" onclick="navigateQuestion(1)" class="px-4 py-2.5 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition flex items-center gap-1.5">
+                        <span>Berikutnya</span>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+
+                    <button id="btnSubmitQuiz" onclick="confirmSubmitQuiz()" class="hidden px-4 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition flex items-center gap-1.5 shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-check"></i>
+                        <span>Selesai</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <section id="viewResult" class="hidden space-y-4 my-auto py-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center relative overflow-hidden">
+                
+                <div class="inline-flex p-3 rounded-full bg-indigo-50 text-indigo-600 mb-2">
+                    <i class="fa-solid fa-award text-3xl"></i>
+                </div>
+
+                <h2 class="text-xl font-extrabold text-slate-800">Hasil Assessment Ulangan Harian</h2>
+                <p id="resultSubtitle" class="text-xs text-slate-500 mt-1">Status: Jawaban Telah Terekam</p>
+
+                <!-- Student Info Card -->
+                <div class="bg-slate-50 rounded-xl p-3 my-4 border border-slate-200 text-left text-xs space-y-1">
+                    <div class="flex justify-between"><span class="text-slate-500">Nama Siswa:</span><span id="resStudentName" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Kelas / Absen:</span><span id="resStudentClass" class="font-bold text-slate-800">-</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Mata Pelajaran:</span><span class="font-bold text-slate-800">Matematika (Pecahan & Desimal)</span></div>
+                    <div class="flex justify-between"><span class="text-slate-500">Waktu Selesai:</span><span id="resSubmittedTime" class="font-bold text-slate-800">-</span></div>
+                </div>
+
+                <!-- Score Big Circle -->
+                <div class="my-6">
+                    <div class="w-32 h-32 mx-auto rounded-full border-8 border-indigo-500 flex flex-col items-center justify-center bg-indigo-50 shadow-inner">
+                        <span class="text-xs font-semibold text-slate-500 uppercase tracking-widest">NILAI</span>
+                        <span id="resScore" class="text-4xl font-extrabold text-indigo-700">0</span>
+                        <span class="text-[10px] text-slate-400">dari 100</span>
+                    </div>
+                </div>
+
+                <!-- Stats Breakdown -->
+                <div class="grid grid-cols-3 gap-2 mb-6">
+                    <div class="bg-emerald-50 border border-emerald-200 p-2.5 rounded-xl text-center">
+                        <span class="block text-xs text-emerald-600 font-medium">Benar</span>
+                        <span id="resCorrectCount" class="text-lg font-bold text-emerald-700">0</span>
+                    </div>
+                    <div class="bg-rose-50 border border-rose-200 p-2.5 rounded-xl text-center">
+                        <span class="block text-xs text-rose-600 font-medium">Salah</span>
+                        <span id="resWrongCount" class="text-lg font-bold text-rose-700">0</span>
+                    </div>
+                    <div class="bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-center">
+                        <span class="block text-xs text-slate-500 font-medium">Kosong</span>
+                        <span id="resEmptyCount" class="text-lg font-bold text-slate-700">0</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-indigo-50 border border-indigo-100 rounded-xl mb-4 text-xs text-indigo-800">
+                    <i class="fa-solid fa-lock text-indigo-600 mr-1"></i>
+                    <span><strong>Batas 1 Kali Jawab:</strong> Anda sudah menyelesaikan asesmen ini dan tidak dapat mengulang kembali.</span>
+                </div>
+
+                <button onclick="toggleReviewModal()" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-4 rounded-xl text-xs transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Lihat Pembahasan Soal</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-400">
+        &copy; 2026 Asesmen Pembelajaran Kurikulum Merdeka • Kelas VI SD
+    </footer>
+
+    
+    <!-- QUESTION GRID MODAL -->
+    <div id="modalQuestionGrid" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-4">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-th-large text-indigo-600"></i>
+                    Navigasi Soal (40 Nomor)
+                </h3>
+                <button onclick="closeQuestionGrid()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- Grid Items -->
+            <div id="questionGridContainer" class="grid grid-cols-5 gap-2 overflow-y-auto p-1 flex-grow">
+                <!-- Buttons generated dynamically -->
+            </div>
+
+            <!-- Legend -->
+            <div class="pt-4 mt-3 border-t border-slate-100 grid grid-cols-3 gap-2 text-[11px] text-slate-600">
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-600"></span><span>Terjawab</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-400"></span><span>Ragu-ragu</span></div>
+                <div class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-slate-200"></span><span>Belum</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUBMIT CONFIRMATION MODAL -->
+    <div id="modalSubmitConfirm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-5 text-center space-y-4">
+            <div class="w-14 h-14 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-2xl">
+                <i class="fa-solid fa-paper-plane"></i>
+            </div>
+            <div>
+                <h3 class="font-extrabold text-slate-800 text-lg">Kirim Ujian Sekarang?</h3>
+                <p id="submitWarningText" class="text-xs text-slate-500 mt-1">Pastikan seluruh jawaban telah diperiksa. Setelah terkirim, Anda tidak dapat mengulang kuis ini.</p>
+            </div>
+            <div id="unansweredWarning" class="hidden p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs font-semibold">
+                Masih ada <span id="unansweredCount">0</span> soal yang belum diisi!
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="closeSubmitConfirm()" class="w-full py-2.5 rounded-xl border border-slate-300 text-slate-600 font-bold text-xs hover:bg-slate-50 transition">
+                    Batal
+                </button>
+                <button onclick="finalizeQuizSubmission()" class="w-full py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 transition shadow-md shadow-emerald-200">
+                    Ya, Kirim
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- REVIEW & PEMBAHASAN MODAL -->
+    <div id="modalReview" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl p-5 max-h-[90vh] flex flex-col">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-book-open text-indigo-600"></i>
+                    Pembahasan Kunci Jawaban
+                </h3>
+                <button onclick="toggleReviewModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div id="reviewContainer" class="overflow-y-auto space-y-4 pr-1 flex-grow">
+                <!-- Generated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TEACHER / GURU DASHBOARD MODAL -->
+    <div id="modalTeacher" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-5 flex flex-col max-h-[85vh]">
+            
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-user-shield text-indigo-600"></i>
+                    Panel Guru & Rekap Nilai
+                </h3>
+                <button onclick="closeTeacherModal()" class="text-slate-400 hover:text-slate-600 text-lg">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <!-- PIN Login State -->
+            <div id="teacherPinState" class="space-y-4 py-4 text-center">
+                <p class="text-xs text-slate-600">Masukkan PIN Guru untuk mengakses rekapitulasi nilai dan reset status siswa.</p>
+                <input type="password" id="teacherPinInput" maxlength="6" placeholder="PIN (Default: 1234)" 
+                    class="w-36 text-center text-lg tracking-widest bg-slate-100 border border-slate-300 rounded-xl p-2.5 font-bold outline-none focus:border-indigo-500">
+                <button onclick="verifyTeacherPin()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+                    Masuk Panel
+                </button>
+            </div>
+
+            <!-- Dashboard Content State -->
+            <div id="teacherDashboardState" class="hidden flex-col flex-grow space-y-3 overflow-hidden">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="text-slate-500">Total Ujian Tersimpan: <strong id="totalRecordsCount" class="text-slate-800">0</strong></span>
+                    <button onclick="exportScoresCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-file-csv"></i> Export CSV
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 flex-grow">
+                    <div id="teacherRecordsList" class="divide-y divide-slate-100">
+                        <!-- Student record items -->
+                    </div>
+                </div>
+
+                <div class="pt-2 flex gap-2">
+                    <button onclick="clearAllTeacherData()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold py-2 rounded-xl text-xs transition border border-rose-200">
+                        Hapus Semua Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM NOTIFICATION TOAST/MODAL -->
+    <div id="customToast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 hidden bg-slate-800 text-white text-xs px-4 py-3 rounded-xl shadow-lg border border-slate-700 flex items-center gap-2">
+        <i id="toastIcon" class="fa-solid fa-circle-info text-indigo-400"></i>
+        <span id="toastMessage">Pesan notifikasi</span>
+    </div>
+
+    <script>
+        const QUIZ_DATA = [
+            {
+                id: 1,
+                question: "Bentuk penjumlahan berulang yang sesuai dengan operasi perkalian $4 \\times \\frac{2}{7}$ adalah ....",
+                options: [
+                    "$\\frac{2}{7} + \\frac{2}{7} + \\frac{2}{7} + \\frac{2}{7}$",
+                    "$4 + \\frac{2}{7} + \\frac{2}{7}$",
+                    "$\\frac{4}{7} + \\frac{4}{7}$",
+                    "$\\frac{2}{4} + \\frac{2}{4} + \\frac{2}{4} + \\frac{2}{4}$"
+                ],
+                correct: 0,
+                explanation: "Perkalian bilangan asli dengan pecahan dimaknai sebagai penjumlahan berulang pecahan tersebut sebanyak bilangan asli perkaliannya: $4 \\times \\frac{2}{7} = \\frac{2}{7} + \\frac{2}{7} + \\frac{2}{7} + \\frac{2}{7}$."
+            },
+            {
+                id: 2,
+                question: "Hasil dari $3 \\times \\frac{2}{9}$ adalah ....",
+                options: [
+                    "$\\frac{5}{9}$",
+                    "$\\frac{6}{9}$",
+                    "$\\frac{6}{27}$",
+                    "$\\frac{5}{27}$"
+                ],
+                correct: 1,
+                explanation: "$3 \\times \\frac{2}{9} = \\frac{3 \\times 2}{9} = \\frac{6}{9}$."
+            },
+            {
+                id: 3,
+                question: "Nilai dari $5 \\times \\frac{3}{4}$ adalah ....",
+                options: [
+                    "$\\frac{15}{20}$",
+                    "$\\frac{8}{4}$",
+                    "$\\frac{15}{4}$",
+                    "$\\frac{3}{20}$"
+                ],
+                correct: 2,
+                explanation: "$5 \\times \\frac{3}{4} = \\frac{5 \\times 3}{4} = \\frac{15}{4}$."
+            },
+            {
+                id: 4,
+                question: "Hasil dari $\\frac{2}{5} \\times 10$ adalah ....",
+                options: ["2", "4", "5", "8"],
+                correct: 1,
+                explanation: "$\\frac{2}{5} \\times 10 = \\frac{20}{5} = 4$."
+            },
+            {
+                id: 5,
+                question: "Bentuk pecahan campuran paling sederhana dari $6 \\times \\frac{3}{8}$ adalah ....",
+                options: [
+                    "$2\\frac{1}{4}$",
+                    "$2\\frac{1}{2}$",
+                    "$1\\frac{3}{4}$",
+                    "$2\\frac{3}{8}$"
+                ],
+                correct: 0,
+                explanation: "$6 \\times \\frac{3}{8} = \\frac{18}{8} = \\frac{9}{4} = 2\\frac{1}{4}$."
+            },
+            {
+                id: 6,
+                question: "Hasil dari $\\frac{5}{6} \\times 14$ jika diubah ke dalam bentuk pecahan campuran sederhana adalah ....",
+                options: [
+                    "$11\\frac{1}{3}$",
+                    "$11\\frac{2}{3}$",
+                    "$10\\frac{2}{3}$",
+                    "$12\\frac{1}{3}$"
+                ],
+                correct: 1,
+                explanation: "$\\frac{5}{6} \\times 14 = \\frac{70}{6} = 11\\frac{4}{6} = 11\\frac{2}{3}$."
+            },
+            {
+                id: 7,
+                question: "Ibu membutuhkan $\\frac{3}{4}\\text{ kg}$ tepung terigu untuk membuat satu loyang kue. Jika Ibu ingin membuat $8$ loyang kue, total tepung terigu yang dibutuhkan adalah ....",
+                options: ["$5\\text{ kg}$", "$6\\text{ kg}$", "$7\\text{ kg}$", "$8\\text{ kg}$"],
+                correct: 1,
+                explanation: "Total tepung $= 8 \\times \\frac{3}{4} = \\frac{24}{4} = 6\\text{ kg}$."
+            },
+            {
+                id: 8,
+                question: "Sebuah kebun memiliki $120$ pohon buah. Sebanyak $\\frac{3}{5}$ dari seluruh pohon tersebut adalah pohon mangga. Banyak pohon mangga di kebun tersebut adalah ....",
+                options: ["$60\\text{ pohon}$", "$72\\text{ pohon}$", "$80\\text{ pohon}$", "$96\\text{ pohon}$"],
+                correct: 1,
+                explanation: "Pohon mangga $= \\frac{3}{5} \\times 120 = 3 \\times 24 = 72\\text{ pohon}$."
+            },
+            {
+                id: 9,
+                question: "Jarak dari rumah Budi ke sekolah adalah $15\\text{ km}$. Budi telah menempuh $\\frac{2}{3}$ dari total jarak tersebut. Jarak yang **belum** ditempuh Budi adalah ....",
+                options: ["$5\\text{ km}$", "$6\\text{ km}$", "$10\\text{ km}$", "$12\\text{ km}$"],
+                correct: 0,
+                explanation: "Jarak yang sudah $= \\frac{2}{3} \\times 15 = 10\\text{ km}$. Jarak yang belum $= 15 - 10 = 5\\text{ km}$."
+            },
+            {
+                id: 10,
+                question: "Pak Ahmad memiliki tanah seluas $300\\text{ m}^2$. Sebanyak $\\frac{1}{3}$ bagian tanah dibangun rumah, dan $\\frac{2}{5}$ bagian dijadikan kolam ikan. Sisa tanah Pak Ahmad yang dijadikan taman adalah ....",
+                options: ["$60\\text{ m}^2$", "$80\\text{ m}^2$", "$100\\text{ m}^2$", "$120\\text{ m}^2$"],
+                correct: 1,
+                explanation: "Luas rumah $= \\frac{1}{3} \\times 300 = 100\\text{ m}^2$. Luas kolam $= \\frac{2}{5} \\times 300 = 120\\text{ m}^2$. Sisa taman $= 300 - (100+120) = 80\\text{ m}^2$."
+            },
+            {
+                id: 11,
+                question: "Operasi pembagian $\\frac{1}{4} \\div 2$ dapat diartikan sebagai ....",
+                options: [
+                    "Mengalikan pecahan $\\frac{1}{4}$ dengan 2",
+                    "Membagi bagian $\\frac{1}{4}$ menjadi 2 bagian sama besar",
+                    "Menjumlahkan $\\frac{1}{4}$ sebanyak 2 kali",
+                    "Mengurangi $\\frac{1}{4}$ dengan 2"
+                ],
+                correct: 1,
+                explanation: "Pembagian pecahan dengan bilangan asli diartikan sebagai membagi bagian pecahan menjadi bagian-bagian yang sama besar."
+            },
+            {
+                id: 12,
+                question: "Hasil dari $\\frac{4}{5} \\div 2$ adalah ....",
+                options: [
+                    "$\\frac{2}{5}$",
+                    "$\\frac{8}{5}$",
+                    "$\\frac{4}{10}$",
+                    "$\\frac{1}{5}$"
+                ],
+                correct: 0,
+                explanation: "$\\frac{4}{5} \\div 2 = \\frac{4}{5 \\times 2} = \\frac{4}{10} = \\frac{2}{5}$."
+            },
+            {
+                id: 13,
+                question: "Hasil dari $\\frac{3}{7} \\div 3$ adalah ....",
+                options: [
+                    "$\\frac{9}{7}$",
+                    "$\\frac{1}{7}$",
+                    "$\\frac{3}{21}$",
+                    "$\\frac{1}{21}$"
+                ],
+                correct: 1,
+                explanation: "$\\frac{3}{7} \\div 3 = \\frac{3}{7} \\times \\frac{1}{3} = \\frac{1}{7}$."
+            },
+            {
+                id: 14,
+                question: "Hasil pembagian bilangan asli dengan pecahan $6 \\div \\frac{1}{2}$ adalah ....",
+                options: ["3", "8", "12", "18"],
+                correct: 2,
+                explanation: "$6 \\div \\frac{1}{2} = 6 \\times \\frac{2}{1} = 12$."
+            },
+            {
+                id: 15,
+                question: "Hasil dari $4 \\div \\frac{2}{3}$ adalah ....",
+                options: ["2", "3", "6", "8"],
+                correct: 2,
+                explanation: "$4 \\div \\frac{2}{3} = 4 \\times \\frac{3}{2} = \\frac{12}{2} = 6$."
+            },
+            {
+                id: 16,
+                question: "Hasil dari $\\frac{6}{11} \\div 4$ dalam bentuk pecahan paling sederhana adalah ....",
+                options: [
+                    "$\\frac{3}{22}$",
+                    "$\\frac{6}{44}$",
+                    "$\\frac{12}{11}$",
+                    "$\\frac{24}{11}$"
+                ],
+                correct: 0,
+                explanation: "$\\frac{6}{11} \\div 4 = \\frac{6}{11} \\times \\frac{1}{4} = \\frac{6}{44} = \\frac{3}{22}$."
+            },
+            {
+                id: 17,
+                question: "Hasil dari $10 \\div \\frac{5}{6}$ adalah ....",
+                options: ["8", "10", "12", "15"],
+                correct: 2,
+                explanation: "$10 \\div \\frac{5}{6} = 10 \\times \\frac{6}{5} = \\frac{60}{5} = 12$."
+            },
+            {
+                id: 18,
+                question: "Rania memiliki pita sepanjang $\\frac{3}{4}\\text{ meter}$. Pita tersebut dipotong menjadi $3$ bagian yang sama panjang. Panjang setiap potongan pita adalah ....",
+                options: [
+                    "$\\frac{1}{4}\\text{ meter}$",
+                    "$\\frac{1}{3}\\text{ meter}$",
+                    "$\\frac{9}{4}\\text{ meter}$",
+                    "$\\frac{1}{2}\\text{ meter}$"
+                ],
+                correct: 0,
+                explanation: "Panjang potongan $= \\frac{3}{4} \\div 3 = \\frac{3}{4} \\times \\frac{1}{3} = \\frac{1}{4}\\text{ meter}$."
+            },
+            {
+                id: 19,
+                question: "Sebuah wadah berisi $8\\text{ liter}$ air. Air tersebut akan dituangkan ke dalam beberapa botol kecil berkapasitas $\\frac{2}{5}\\text{ liter}$ sampai habis. Banyak botol kecil yang dibutuhkan adalah ....",
+                options: ["$15\\text{ botol}$", "$16\\text{ botol}$", "$20\\text{ botol}$", "$24\\text{ botol}$"],
+                correct: 2,
+                explanation: "Banyak botol $= 8 \\div \\frac{2}{5} = 8 \\times \\frac{5}{2} = 20\\text{ botol}$."
+            },
+            {
+                id: 20,
+                question: "Ayah membeli $50\\text{ kg}$ beras. Setiap hari keluarga Ayah mengonsumsi $\\frac{2}{3}\\text{ kg}$ beras. Beras tersebut akan habis dikonsumsi dalam waktu ....",
+                options: ["$33\\text{ hari}$", "$50\\text{ hari}$", "$75\\text{ hari}$", "$100\\text{ hari}$"],
+                correct: 2,
+                explanation: "Waktu $= 50 \\div \\frac{2}{3} = 50 \\times \\frac{3}{2} = 75\\text{ hari}$."
+            },
+            {
+                id: 21,
+                question: "Bentuk desimal dari pecahan $\\frac{7}{10}$ adalah ....",
+                options: ["$0{,}07$", "$0{,}7$", "$7{,}0$", "$0{,}77$"],
+                correct: 1,
+                explanation: "$\\frac{7}{10} = 0{,}7$."
+            },
+            {
+                id: 22,
+                question: "Bentuk desimal dari $\\frac{3}{10}$ adalah ....",
+                options: ["$0{,}03$", "$0{,}3$", "$3{,}0$", "$0{,}33$"],
+                correct: 1,
+                explanation: "$\\frac{3}{10} = 0{,}3$."
+            },
+            {
+                id: 23,
+                question: "Bentuk desimal dari pecahan $\\frac{4}{5}$ adalah ....",
+                options: ["$0{,}4$", "$0{,}5$", "$0{,}8$", "$0{,}25$"],
+                correct: 2,
+                explanation: "$\\frac{4}{5} = \\frac{8}{10} = 0{,}8$."
+            },
+            {
+                id: 24,
+                question: "Bentuk desimal dari pecahan $\\frac{3}{4}$ adalah ....",
+                options: ["$0{,}34$", "$0{,}65$", "$0{,}75$", "$0{,}80$"],
+                correct: 2,
+                explanation: "$\\frac{3}{4} = \\frac{75}{100} = 0{,}75$."
+            },
+            {
+                id: 25,
+                question: "Bentuk desimal dari pecahan campuran $5\\frac{4}{5}$ adalah ....",
+                options: ["$5{,}4$", "$5{,}8$", "$5{,}45$", "$5{,}85$"],
+                correct: 1,
+                explanation: "$\\frac{4}{5} = 0{,}8 \\implies 5\\frac{4}{5} = 5 + 0{,}8 = 5{,}8$."
+            },
+            {
+                id: 26,
+                question: "Bentuk desimal dari pecahan campuran $2\\frac{1}{2}$ adalah ....",
+                options: ["$2{,}1$", "$2{,}2$", "$2{,}5$", "$2{,}25$"],
+                correct: 2,
+                explanation: "$\\frac{1}{2} = 0{,}5 \\implies 2\\frac{1}{2} = 2{,}5$."
+            },
+            {
+                id: 27,
+                question: "Bentuk pecahan biasa paling sederhana dari bilangan desimal $0{,}6$ adalah ....",
+                options: [
+                    "$\\frac{6}{10}$",
+                    "$\\frac{3}{5}$",
+                    "$\\frac{2}{3}$",
+                    "$\\frac{1}{6}$"
+                ],
+                correct: 1,
+                explanation: "$0{,}6 = \\frac{6}{10} = \\frac{3}{5}$."
+            },
+            {
+                id: 28,
+                question: "Bentuk pecahan biasa paling sederhana dari bilangan desimal $0{,}5$ adalah ....",
+                options: [
+                    "$\\frac{5}{10}$",
+                    "$\\frac{1}{2}$",
+                    "$\\frac{2}{5}$",
+                    "$\\frac{1}{5}$"
+                ],
+                correct: 1,
+                explanation: "$0{,}5 = \\frac{5}{10} = \\frac{1}{2}$."
+            },
+            {
+                id: 29,
+                question: "Tanda pembanding yang tepat untuk mengisi titik-titik pada $0{,}7 \\dots 0{,}4$ adalah ....",
+                options: ["$<$", "$>$", "$=$", "$\\le$"],
+                correct: 1,
+                explanation: "Membandingkan persepuluhan: $7 > 4$, sehingga $0{,}7 > 0{,}4$."
+            },
+            {
+                id: 30,
+                question: "Pernyataan perbandingan bilangan desimal berikut yang **benar** adalah ....",
+                options: [
+                    "$0{,}3 > 0{,}8$",
+                    "$0{,}6 < 0{,}2$",
+                    "$0{,}5 > 0{,}9$",
+                    "$0{,}1 < 0{,}4$"
+                ],
+                correct: 3,
+                explanation: "Pernyataan $0{,}1 < 0{,}4$ adalah benar karena 1 lebih kecil dari 4 pada nilai tempat persepuluhan."
+            },
+            {
+                id: 31,
+                question: "Urutan bilangan desimal $0{,}6;\\; 0{,}1;\\; 0{,}8;\\; 0{,}3$ dari yang terkecil ke terbesar adalah ....",
+                options: [
+                    "$0{,}1;\\; 0{,}3;\\; 0{,}6;\\; 0{,}8$",
+                    "$0{,}8;\\; 0{,}6;\\; 0{,}3;\\; 0{,}1$",
+                    "$0{,}1;\\; 0{,}6;\\; 0{,}3;\\; 0{,}8$",
+                    "$0{,}3;\\; 0{,}1;\\; 0{,}6;\\; 0{,}8$"
+                ],
+                correct: 0,
+                explanation: "Urutan terkecil ke terbesar: $0{,}1 < 0{,}3 < 0{,}6 < 0{,}8$."
+            },
+            {
+                id: 32,
+                question: "Urutan bilangan desimal $0{,}9;\\; 0{,}4;\\; 0{,}7;\\; 0{,}2$ dari yang terbesar ke terkecil adalah ....",
+                options: [
+                    "$0{,}2;\\; 0{,}4;\\; 0{,}7;\\; 0{,}9$",
+                    "$0{,}9;\\; 0{,}7;\\; 0{,}4;\\; 0{,}2$",
+                    "$0{,}9;\\; 0{,}4;\\; 0{,}7;\\; 0{,}2$",
+                    "$0{,}7;\\; 0{,}9;\\; 0{,}4;\\; 0{,}2$"
+                ],
+                correct: 1,
+                explanation: "Urutan terbesar ke terkecil: $0{,}9 > 0{,}7 > 0{,}4 > 0{,}2$."
+            },
+            {
+                id: 33,
+                question: "Diketahui empat kartu bilangan desimal: $0{,}5$, $0{,}2$, $0{,}9$, dan $0{,}7$. Urutan kartu dari nilai yang terkecil adalah ....",
+                options: [
+                    "$0{,}2;\\; 0{,}5;\\; 0{,}7;\\; 0{,}9$",
+                    "$0{,}9;\\; 0{,}7;\\; 0{,}5;\\; 0{,}2$",
+                    "$0{,}2;\\; 0{,}7;\\; 0{,}5;\\; 0{,}9$",
+                    "$0{,}5;\\; 0{,}2;\\; 0{,}7;\\; 0{,}9$"
+                ],
+                correct: 0,
+                explanation: "Urutan dari terkecil: $0{,}2;\\; 0{,}5;\\; 0{,}7;\\; 0{,}9$."
+            },
+            {
+                id: 34,
+                question: "Empat orang siswa mengukur luas lahan taman sekolah yang diselesaikan. Budi menyelesaikan $0{,}7$ bagian, Andi menyelesaikan $\\frac{3}{5}$ bagian, Cici menyelesaikan $0{,}4$ bagian, dan Doni menyelesaikan $\\frac{1}{2}$ bagian. Urutan siswa yang mengerjakan dari yang paling luas adalah ....",
+                options: [
+                    "Budi, Andi, Doni, Cici",
+                    "Budi, Doni, Andi, Cici",
+                    "Andi, Budi, Cici, Doni",
+                    "Cici, Doni, Andi, Budi"
+                ],
+                correct: 0,
+                explanation: "Ubah ke desimal: Budi ($0{,}7$), Andi ($\\frac{3}{5}=0{,}6$), Doni ($\\frac{1}{2}=0{,}5$), Cici ($0{,}4$). Urutan dari paling luas: Budi, Andi, Doni, Cici."
+            },
+            {
+                id: 35,
+                question: "Terdapat empat pita dengan panjang masing-masing: Pita A ($0{,}8\\text{ m}$), Pita B ($\\frac{3}{4}\\text{ m}$), Pita C ($0{,}6\\text{ m}$), dan Pita D ($\\frac{1}{2}\\text{ m}$). Urutan pita dari yang paling panjang adalah ....",
+                options: ["A, B, C, D", "B, A, C, D", "A, C, B, D", "D, C, B, A"],
+                correct: 0,
+                explanation: "Konversi: Pita A ($0{,}8\\text{ m}$), Pita B ($0{,}75\\text{ m}$), Pita C ($0{,}6\\text{ m}$), Pita D ($0{,}5\\text{ m}$). Urutan: A, B, C, D."
+            },
+            {
+                id: 36,
+                question: "Sebuah jus buah sebanyak $\\frac{5}{6}\\text{ liter}$ dipindahkan ke dalam beberapa gelas kecil berkapasitas $\\frac{5}{24}\\text{ liter}$. Banyak gelas kecil yang dapat terisi penuh jus adalah ....",
+                options: ["$3\\text{ gelas}$", "$4\\text{ gelas}$", "$5\\text{ gelas}$", "$6\\text{ gelas}$"],
+                correct: 1,
+                explanation: "Banyak gelas $= \\frac{5}{6} \\div \\frac{5}{24} = \\frac{5}{6} \\times \\frac{24}{5} = \\frac{24}{6} = 4\\text{ gelas}$."
+            },
+            {
+                id: 37,
+                question: "Ibu membuat $60$ buah kue pastel. Sebanyak $\\frac{2}{15}$ bagian dikonsumsi oleh anggota keluarga. Sisanya akan dibagikan kepada tetangga, di mana setiap tetangga menerima bagian sebesar $\\frac{1}{4}$ dari sisa kue tersebut. Banyak kue pastel yang diterima oleh **setiap** tetangga adalah ....",
+                options: ["$8\\text{ buah}$", "$10\\text{ buah}$", "$13\\text{ buah}$", "$39\\text{ buah}$"],
+                correct: 2,
+                explanation: "Kue dimakan $= \\frac{2}{15} \\times 60 = 8\\text{ buah}$. Sisa kue $= 60 - 8 = 52\\text{ buah}$. Kue tiap tetangga $= \\frac{1}{4} \\times 52 = 13\\text{ buah}$."
+            },
+            {
+                id: 38,
+                question: "Pak Made mengecat dinding seluas $5\\frac{4}{5}\\text{ m}^2$. Dinding yang telah dicat tersebut jika dinyatakan dalam bentuk desimal adalah ....",
+                options: ["$5{,}40\\text{ m}^2$", "$5{,}45\\text{ m}^2$", "$5{,}80\\text{ m}^2$", "$5{,}85\\text{ m}^2$"],
+                correct: 2,
+                explanation: "$5\\frac{4}{5} = 5 + \\frac{8}{10} = 5{,}80\\text{ m}^2$."
+            },
+            {
+                id: 39,
+                question: "Dini menerima pesanan $100$ porsi nasi kotak. Ia telah menyelesaikan $\\frac{3}{4}$ bagian dari seluruh pesanan tersebut. Jika setiap porsi nasi kotak membutuhkan biaya $\\text{Rp}15.000{,}00$, berapa total biaya pesanan nasi kotak yang **belum** diselesaikan Dini?",
+                options: [
+                    "$\\text{Rp}375.000{,}00$",
+                    "$\\text{Rp}750.000{,}00$",
+                    "$\\text{Rp}1.125.000{,}00$",
+                    "$\\text{Rp}1.500.000{,}00$"
+                ],
+                correct: 0,
+                explanation: "Sisa porsi yang belum $= 100 - (\\frac{3}{4} \\times 100) = 25\\text{ porsi}$. Total biaya $= 25 \\times \\text{Rp}15.000 = \\text{Rp}375.000{,}00$."
+            },
+            {
+                id: 40,
+                question: "Seorang penjahit memiliki kain sepanjang $12\\text{ meter}$. Kain tersebut digunakan untuk membuat $8$ buah celana yang masing-masing membutuhkan $\\frac{3}{4}\\text{ meter}$ kain. Sisa kain penjahit tersebut kemudian dipotong-potong menjadi beberapa bagian yang panjangnya $\\frac{1}{2}\\text{ meter}$. Banyak potongan kain kecil yang diperoleh adalah ....",
+                options: ["$6\\text{ potong}$", "$8\\text{ potong}$", "$10\\text{ potong}$", "$12\\text{ potong}$"],
+                correct: 3,
+                explanation: "Kain celana $= 8 \\times \\frac{3}{4} = 6\\text{ m}$. Sisa kain $= 12 - 6 = 6\\text{ m}$. Banyak potongan $= 6 \\div \\frac{1}{2} = 12\\text{ potong}$."
+            }
+        ];
+
+        let studentData = {
+            name: '',
+            class: '6-A',
+            absence: '',
+            subject: 'Matematika (Pecahan & Desimal)'
+        };
+
+        let currentQuestionIdx = 0;
+        let userAnswers = new Array(QUIZ_DATA.length).fill(null);
+        let bookmarkedQuestions = new Array(QUIZ_DATA.length).fill(false);
+        let timerSeconds = 3600; // 60 minutes
+        let timerInterval = null;
+        const STORAGE_KEY_SINGLE_ATTEMPT = 'sd6_quiz_submission_v1';
+        const STORAGE_KEY_TEACHER_RECORDS = 'sd6_teacher_records_v1';
+
+        window.addEventListener('DOMContentLoaded', () => {
+            checkExistingSubmission();
+        });
+
+        function checkExistingSubmission() {
+            const savedAttempt = localStorage.getItem(STORAGE_KEY_SINGLE_ATTEMPT);
+            if (savedAttempt) {
+                try {
+                    const record = JSON.parse(savedAttempt);
+                    displayResultScreen(record);
+                } catch (e) {
+                    console.error("Failed to parse attempt", e);
+                }
+            }
+        }
+
+        function handleStartQuiz(e) {
+            e.preventDefault();
+            
+            // Re-verify single attempt status
+            if (localStorage.getItem(STORAGE_KEY_SINGLE_ATTEMPT)) {
+                showToast("Anda sudah pernah mengerjakan asesmen ini!", "warning");
+                checkExistingSubmission();
+                return;
+            }
+
+            studentData.name = document.getElementById('studentName').value.trim();
+            studentData.class = document.getElementById('studentClass').value;
+            studentData.absence = document.getElementById('studentAbsence').value;
+
+            if (!studentData.name || !studentData.absence) {
+                showToast("Mohon lengkapi Nama dan No. Absen!", "warning");
+                return;
+            }
+
+            // Update UI with student details
+            document.getElementById('displayName').innerText = studentData.name;
+            document.getElementById('displayClassBadge').innerText = studentData.class;
+            document.getElementById('displayAbsence').innerText = studentData.absence;
+
+            // Switch view to Quiz
+            document.getElementById('viewRegistration').classList.add('hidden');
+            document.getElementById('viewQuiz').classList.remove('hidden');
+            document.getElementById('viewQuiz').classList.add('flex');
+
+            // Render First Question & Start Timer
+            renderQuestion(0);
+            startTimer();
+            showToast("Selamat Mengerjakan! Waktu Anda 60 Menit.", "info");
+        }
+
+        function startTimer() {
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerSeconds--;
+                const minutes = Math.floor(timerSeconds / 60);
+                const seconds = timerSeconds % 60;
+                document.getElementById('timerText').innerText = 
+                    `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+                if (timerSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    showToast("Waktu Ujian telah Habis! Sistem mengirim jawaban otomatis.", "warning");
+                    finalizeQuizSubmission();
+                }
+            }, 1000);
+        }
+
+        function renderQuestion(index) {
+            currentQuestionIdx = index;
+            const item = QUIZ_DATA[index];
+
+            // Update question info
+            document.getElementById('currentQuestionNum').innerText = index + 1;
+            document.getElementById('questionText').innerHTML = item.question;
+
+            // Render options
+            const optionsContainer = document.getElementById('optionsContainer');
+            optionsContainer.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+            item.options.forEach((opt, optIdx) => {
+                const isSelected = userAnswers[index] === optIdx;
+                const optBtn = document.createElement('button');
+                optBtn.type = 'button';
+                optBtn.onclick = () => selectOption(optIdx);
+                optBtn.className = `w-full text-left p-3.5 rounded-xl border transition flex items-center gap-3 ${
+                    isSelected 
+                        ? 'bg-indigo-50 border-indigo-500 text-indigo-950 font-bold shadow-sm' 
+                        : 'bg-white border-slate-200 hover:border-indigo-200 text-slate-700 font-medium'
+                }`;
+
+                optBtn.innerHTML = `
+                    <div class="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-xs flex-shrink-0 ${
+                        isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500'
+                    }">
+                        ${optionLabels[optIdx]}
+                    </div>
+                    <div class="text-sm leading-snug flex-grow">${opt}</div>
+                `;
+                optionsContainer.appendChild(optBtn);
+            });
+
+            // Update navigation buttons
+            document.getElementById('btnPrev').style.visibility = index === 0 ? 'hidden' : 'visible';
+            if (index === QUIZ_DATA.length - 1) {
+                document.getElementById('btnNext').classList.add('hidden');
+                document.getElementById('btnSubmitQuiz').classList.remove('hidden');
+            } else {
+                document.getElementById('btnNext').classList.remove('hidden');
+                document.getElementById('btnSubmitQuiz').classList.add('hidden');
+            }
+
+            // Update Bookmark state
+            updateBookmarkBtnUI();
+
+            // Update Progress Bar
+            const answeredCount = userAnswers.filter(a => a !== null).length;
+            document.getElementById('displayAnsweredCount').innerText = `${answeredCount}/${QUIZ_DATA.length}`;
+            const progressPercent = ((index + 1) / QUIZ_DATA.length) * 100;
+            document.getElementById('quizProgressBar').style.width = `${progressPercent}%`;
+
+            // Trigger KaTeX rendering for math equations
+            if (window.renderMathInElement) {
+                renderMathInElement(document.getElementById('questionText'), {
+                    delimiters: [{left: "$", right: "$", display: false}]
+                });
+                renderMathInElement(optionsContainer, {
+                    delimiters: [{left: "$", right: "$", display: false}]
+                });
+            }
+        }
+
+        function selectOption(optionIndex) {
+            userAnswers[currentQuestionIdx] = optionIndex;
+            renderQuestion(currentQuestionIdx);
+        }
+
+        function navigateQuestion(direction) {
+            const nextIdx = currentQuestionIdx + direction;
+            if (nextIdx >= 0 && nextIdx < QUIZ_DATA.length) {
+                renderQuestion(nextIdx);
+            }
+        }
+
+        function toggleBookmark() {
+            bookmarkedQuestions[currentQuestionIdx] = !bookmarkedQuestions[currentQuestionIdx];
+            updateBookmarkBtnUI();
+            showToast(
+                bookmarkedQuestions[currentQuestionIdx] ? "Soal ditandai Ragu-ragu" : "Tanda Ragu-ragu dihapus", 
+                "info"
+            );
+        }
+
+        function updateBookmarkBtnUI() {
+            const btn = document.getElementById('btnBookmark');
+            const isBookmarked = bookmarkedQuestions[currentQuestionIdx];
+            if (isBookmarked) {
+                btn.className = "text-amber-500 font-bold text-sm transition flex items-center gap-1";
+                btn.innerHTML = `<i class="fa-solid fa-bookmark"></i><span class="text-xs">Ragu</span>`;
+            } else {
+                btn.className = "text-slate-400 hover:text-amber-500 text-sm transition flex items-center gap-1";
+                btn.innerHTML = `<i class="fa-regular fa-bookmark"></i><span class="text-xs">Ragu</span>`;
+            }
+        }
+
+        function openQuestionGrid() {
+            const container = document.getElementById('questionGridContainer');
+            container.innerHTML = '';
+
+            QUIZ_DATA.forEach((_, idx) => {
+                const isAnswered = userAnswers[idx] !== null;
+                const isBookmarked = bookmarkedQuestions[idx];
+                const isCurrent = idx === currentQuestionIdx;
+
+                let btnStyle = "bg-slate-100 text-slate-700 border-slate-200";
+                if (isBookmarked) {
+                    btnStyle = "bg-amber-400 text-slate-900 font-bold border-amber-500";
+                } else if (isAnswered) {
+                    btnStyle = "bg-indigo-600 text-white font-bold border-indigo-700";
+                }
+
+                if (isCurrent) {
+                    btnStyle += " ring-2 ring-indigo-400 ring-offset-1";
+                }
+
+                const btn = document.createElement('button');
+                btn.className = `h-10 rounded-xl text-xs font-bold border transition flex items-center justify-center ${btnStyle}`;
+                btn.innerText = idx + 1;
+                btn.onclick = () => {
+                    closeQuestionGrid();
+                    renderQuestion(idx);
+                };
+                container.appendChild(btn);
+            });
+
+            document.getElementById('modalQuestionGrid').classList.remove('hidden');
+        }
+
+        function closeQuestionGrid() {
+            document.getElementById('modalQuestionGrid').classList.add('hidden');
+        }
+
+        function confirmSubmitQuiz() {
+            const unanswered = userAnswers.filter(a => a === null).length;
+            const warningBox = document.getElementById('unansweredWarning');
+            if (unanswered > 0) {
+                document.getElementById('unansweredCount').innerText = unanswered;
+                warningBox.classList.remove('hidden');
+            } else {
+                warningBox.classList.add('hidden');
+            }
+            document.getElementById('modalSubmitConfirm').classList.remove('hidden');
+        }
+
+        function closeSubmitConfirm() {
+            document.getElementById('modalSubmitConfirm').classList.add('hidden');
+        }
+
+        function finalizeQuizSubmission() {
+            clearInterval(timerInterval);
+            closeSubmitConfirm();
+
+            // Calculate Score
+            let correctCount = 0;
+            let wrongCount = 0;
+            let emptyCount = 0;
+
+            QUIZ_DATA.forEach((item, idx) => {
+                const ans = userAnswers[idx];
+                if (ans === null) {
+                    emptyCount++;
+                } else if (ans === item.correct) {
+                    correctCount++;
+                } else {
+                    wrongCount++;
+                }
+            });
+
+            const totalScore = Math.round((correctCount / QUIZ_DATA.length) * 100);
+            const now = new Date();
+            const formattedTime = now.toLocaleDateString('id-ID', {
+                day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+
+            const resultRecord = {
+                student: studentData,
+                score: totalScore,
+                correct: correctCount,
+                wrong: wrongCount,
+                empty: emptyCount,
+                answers: userAnswers,
+                submittedAt: formattedTime
+            };
+
+            // Save Attempt to localStorage (LOCK SINGLE ATTEMPT)
+            localStorage.setItem(STORAGE_KEY_SINGLE_ATTEMPT, JSON.stringify(resultRecord));
+
+            // Save to Teacher Records Database
+            saveRecordToTeacherDB(resultRecord);
+
+            // Display Celebration Confetti if Score is good
+            if (totalScore >= 70 && window.confetti) {
+                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+            }
+
+            // Transition UI to Result
+            displayResultScreen(resultRecord);
+        }
+
+        function saveRecordToTeacherDB(record) {
+            let records = [];
+            const existing = localStorage.getItem(STORAGE_KEY_TEACHER_RECORDS);
+            if (existing) {
+                try { records = JSON.parse(existing); } catch(e){}
+            }
+            // Check if already logged to avoid duplicates
+            const idx = records.findIndex(r => r.student.name === record.student.name && r.student.absence === record.student.absence);
+            if (idx >= 0) {
+                records[idx] = record;
+            } else {
+                records.push(record);
+            }
+            localStorage.setItem(STORAGE_KEY_TEACHER_RECORDS, JSON.stringify(records));
+        }
+
+        function displayResultScreen(record) {
+            document.getElementById('viewRegistration').classList.add('hidden');
+            document.getElementById('viewQuiz').classList.add('hidden');
+            document.getElementById('viewQuiz').classList.remove('flex');
+            document.getElementById('viewResult').classList.remove('hidden');
+
+            document.getElementById('resStudentName').innerText = record.student.name;
+            document.getElementById('resStudentClass').innerText = `${record.student.class} / No. ${record.student.absence}`;
+            document.getElementById('resSubmittedTime').innerText = record.submittedAt;
+            document.getElementById('resScore').innerText = record.score;
+            document.getElementById('resCorrectCount').innerText = record.correct;
+            document.getElementById('resWrongCount').innerText = record.wrong;
+            document.getElementById('resEmptyCount').innerText = record.empty;
+
+            // Render Solution / Review modal content
+            renderReviewContent(record);
+        }
+
+        function renderReviewContent(record) {
+            const container = document.getElementById('reviewContainer');
+            container.innerHTML = '';
+
+            const optionLabels = ['A', 'B', 'C', 'D'];
+
+            QUIZ_DATA.forEach((item, idx) => {
+                const userAns = record.answers[idx];
+                const isCorrect = userAns === item.correct;
+                const isEmpty = userAns === null;
+
+                const card = document.createElement('div');
+                card.className = `p-4 rounded-xl border text-xs space-y-2 ${
+                    isCorrect ? 'bg-emerald-50/50 border-emerald-200' : 'bg-rose-50/50 border-rose-200'
+                }`;
+
+                card.innerHTML = `
+                    <div class="flex items-center justify-between font-bold">
+                        <span class="text-slate-700">Soal No. ${idx + 1}</span>
+                        <span class="${isCorrect ? 'text-emerald-600' : 'text-rose-600'}">
+                            ${isCorrect ? '<i class="fa-solid fa-circle-check"></i> Benar' : (isEmpty ? '<i class="fa-solid fa-circle-minus"></i> Tidak Diisi' : '<i class="fa-solid fa-circle-xmark"></i> Salah')}
+                        </span>
+                    </div>
+                    <div class="text-slate-800 font-medium">${item.question}</div>
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-200 space-y-1">
+                        <div><strong class="text-slate-500">Jawaban Anda:</strong> ${userAns !== null ? optionLabels[userAns] + '. ' + item.options[userAns] : '<i>Kosong</i>'}</div>
+                        <div class="text-emerald-700"><strong>Kunci Jawaban:</strong> ${optionLabels[item.correct]}. ${item.options[item.correct]}</div>
+                    </div>
+                    <div class="p-2.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-900 leading-relaxed">
+                        <strong><i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Pembahasan:</strong><br>
+                        ${item.explanation}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            if (window.renderMathInElement) {
+                renderMathInElement(container, {
+                    delimiters: [{left: "$", right: "$", display: false}]
+                });
+            }
+        }
+
+        function toggleReviewModal() {
+            const modal = document.getElementById('modalReview');
+            modal.classList.toggle('hidden');
+        }
+
+        function openTeacherModal() {
+            document.getElementById('modalTeacher').classList.remove('hidden');
+        }
+
+        function closeTeacherModal() {
+            document.getElementById('modalTeacher').classList.add('hidden');
+        }
+
+        function verifyTeacherPin() {
+            const pin = document.getElementById('teacherPinInput').value;
+            if (pin === "1234" || pin === "6666") { // Default teacher passcodes
+                document.getElementById('teacherPinState').classList.add('hidden');
+                document.getElementById('teacherDashboardState').classList.remove('hidden');
+                document.getElementById('teacherDashboardState').classList.add('flex');
+                loadTeacherDashboardData();
+            } else {
+                showToast("PIN Salah! (Gunakan default: 1234)", "warning");
+            }
+        }
+
+        function loadTeacherDashboardData() {
+            const container = document.getElementById('teacherRecordsList');
+            container.innerHTML = '';
+
+            const recordsJson = localStorage.getItem(STORAGE_KEY_TEACHER_RECORDS);
+            let records = [];
+            if (recordsJson) {
+                try { records = JSON.parse(recordsJson); } catch(e){}
+            }
+
+            document.getElementById('totalRecordsCount').innerText = records.length;
+
+            if (records.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">Belum ada data siswa yang masuk.</div>`;
+                return;
+            }
+
+            records.forEach((rec, idx) => {
+                const item = document.createElement('div');
+                item.className = 'p-3 flex items-center justify-between text-xs hover:bg-slate-50 transition';
+                item.innerHTML = `
+                    <div>
+                        <p class="font-bold text-slate-800">${rec.student.name} <span class="text-slate-400 font-normal">(${rec.student.class} - Absen ${rec.student.absence})</span></p>
+                        <p class="text-[10px] text-slate-400">${rec.submittedAt}</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-extrabold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">Nilai: ${rec.score}</span>
+                        <button onclick="resetSingleStudentAttempt('${rec.student.name}')" title="Reset Ujian Siswa Ini" class="text-rose-500 hover:text-rose-700 p-1">
+                            <i class="fa-solid fa-rotate-left"></i>
+                        </button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function resetSingleStudentAttempt(studentName) {
+            // Remove attempt if matching current user
+            const currentAttempt = localStorage.getItem(STORAGE_KEY_SINGLE_ATTEMPT);
+            if (currentAttempt) {
+                try {
+                    const parsed = JSON.parse(currentAttempt);
+                    if (parsed.student.name === studentName) {
+                        localStorage.removeItem(STORAGE_KEY_SINGLE_ATTEMPT);
+                    }
+                } catch(e){}
+            }
+
+            // Remove from teacher records
+            let records = JSON.parse(localStorage.getItem(STORAGE_KEY_TEACHER_RECORDS) || '[]');
+            records = records.filter(r => r.student.name !== studentName);
+            localStorage.setItem(STORAGE_KEY_TEACHER_RECORDS, JSON.stringify(records));
+
+            showToast(`Status ujian ${studentName} berhasil di-reset!`, "info");
+            loadTeacherDashboardData();
+
+            // Refresh view
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function clearAllTeacherData() {
+            localStorage.removeItem(STORAGE_KEY_SINGLE_ATTEMPT);
+            localStorage.removeItem(STORAGE_KEY_TEACHER_RECORDS);
+            showToast("Seluruh data asesmen telah dibersihkan!", "info");
+            loadTeacherDashboardData();
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        }
+
+        function exportScoresCSV() {
+            const recordsJson = localStorage.getItem(STORAGE_KEY_TEACHER_RECORDS);
+            if (!recordsJson) {
+                showToast("Tidak ada data untuk diexport!", "warning");
+                return;
+            }
+
+            const records = JSON.parse(recordsJson);
+            let csvContent = "data:text/csv;charset=utf-8,Nama Siswa,Kelas,No Absen,Mata Pelajaran,Nilai,Benar,Salah,Kosong,Waktu Selesai\n";
+
+            records.forEach(r => {
+                csvContent += `"${r.student.name}","${r.student.class}","${r.student.absence}","${r.student.subject}",${r.score},${r.correct},${r.wrong},${r.empty},"${r.submittedAt}"\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Rekap_Nilai_Matematika_Kelas6_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("File CSV Berhasil Diunduh!", "info");
+        }
+
+        function showToast(msg, type = "info") {
+            const toast = document.getElementById('customToast');
+            const msgEl = document.getElementById('toastMessage');
+            const iconEl = document.getElementById('toastIcon');
+
+            msgEl.innerText = msg;
+            if (type === "warning") {
+                iconEl.className = "fa-solid fa-triangle-exclamation text-amber-400";
+            } else {
+                iconEl.className = "fa-solid fa-circle-info text-indigo-400";
+            }
+
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
